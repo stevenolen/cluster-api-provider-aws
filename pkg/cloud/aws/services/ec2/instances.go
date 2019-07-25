@@ -47,8 +47,7 @@ const (
 	localIPV4Lookup = "{{ ds.meta_data.local_ipv4 }}"
 
 	// hostnameLookup resolves via cloud init and uses cloud provider's metadata service to lookup its own hostname.
-	hostnameLookup = "{{ ds.meta_data.hostname }}"
-
+	hostnameLookup = `{{ v1.local_hostname }}.{{ "ec2" if v1.region == "us-east-1" else v1.region+".compute" }}.internal`
 	// containerdSocket is the path to containerd socket.
 	containerdSocket = "/var/run/containerd/containerd.sock"
 
@@ -224,7 +223,6 @@ func (s *Service) createInstance(machine *actuators.MachineScope, bootstrapToken
 						&machine.MachineConfig.KubeadmConfiguration.Join.NodeRegistration,
 						kubeadm.WithTaints(machine.GetMachine().Spec.Taints),
 						kubeadm.WithNodeRegistrationName(hostnameLookup),
-						kubeadm.WithCRISocket(containerdSocket),
 						kubeadm.WithKubeletExtraArgs(map[string]string{"cloud-provider": cloudProvider}),
 					),
 				),
@@ -279,7 +277,6 @@ func (s *Service) createInstance(machine *actuators.MachineScope, bootstrapToken
 						&machine.MachineConfig.KubeadmConfiguration.Init.NodeRegistration,
 						kubeadm.WithTaints(machine.GetMachine().Spec.Taints),
 						kubeadm.WithNodeRegistrationName(hostnameLookup),
-						kubeadm.WithCRISocket(containerdSocket),
 						kubeadm.WithKubeletExtraArgs(map[string]string{"cloud-provider": cloudProvider}),
 					),
 				),
@@ -325,7 +322,6 @@ func (s *Service) createInstance(machine *actuators.MachineScope, bootstrapToken
 				kubeadm.SetNodeRegistrationOptions(
 					&machine.MachineConfig.KubeadmConfiguration.Join.NodeRegistration,
 					kubeadm.WithNodeRegistrationName(hostnameLookup),
-					kubeadm.WithCRISocket(containerdSocket),
 					kubeadm.WithKubeletExtraArgs(map[string]string{"cloud-provider": cloudProvider}),
 					kubeadm.WithTaints(machine.GetMachine().Spec.Taints),
 					kubeadm.WithKubeletExtraArgs(map[string]string{"node-labels": nodeRole}),
