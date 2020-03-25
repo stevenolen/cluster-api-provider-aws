@@ -278,7 +278,9 @@ func (s Subnets) FilterPrivate() (res Subnets) {
 func (s Subnets) FilterPublic() (res Subnets) {
 	for _, x := range s {
 		if x.IsPublic {
-			res = append(res, x)
+			if x.AvailabilityZone == "us-east-1a" || x.AvailabilityZone == "us-east-1b" || x.AvailabilityZone == "us-east-1c" {
+				res = append(res, x)
+			}
 		}
 	}
 	return
